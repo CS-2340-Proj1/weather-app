@@ -1,0 +1,57 @@
+.bg-index{
+    background: url("/static/img/background.jpg") no-repeat fixed;
+    background-size: 100% auto;
+  }
+.navbar a.nav-link {
+    color: #FFFEF6 !important;
+}
+.bg-dark {
+    background-color: #00264D !important;
+}
+.ms-footer {
+    background-color: #00172D;
+  }
+.ms-footer p {
+    color: #7F7F7F;
+    font-size: 13px;
+  }
+.ms-footer a:hover {
+    color: #6ab43e;
+    text-decoration: none;
+}
+.ms-footer-bottom span{
+    font-size: 13px;
+    line-height: 38px;
+}
+.ms-footer-bottom a {
+    color: #6ab43e;
+    text-decoration: none;
+}
+.ms-footer-bottom a:hover {
+    color: #fff;
+}
+.img-card-200 {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  max-height: 200px;
+  object-fit: contain; /* ensures the image maintains its aspect ratio */
+}
+.img-card-400 {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  max-height: 400px;
+  object-fit: contain;
+}
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    padding: 10px;
+  }
+}
+#map{
+    height:400px;        /* or any height you like */
+}

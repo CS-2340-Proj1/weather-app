@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container p-3">
+  <h2>Today's AI Weather Summary</h2>
+
+  <div class="mb-3">
+    <a
+      href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}"
+      class="btn btn-outline-primary me-2"
+    >
+      7-Day Forecast
+    </a>
+    <a
+      href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}"
+      class="btn btn-primary"
+    >
+      Today's AI Summary
+    </a>
+  </div>
+
+  <form method="get" class="mb-3 d-flex">
+    <input
+      id="zip_input"
+      name="zip_code"
+      type="text"
+      class="form-control me-2"
+      placeholder="Enter zip code"
+      value="{{ zip_code|default_if_none:'' }}"
+      onfocus="this.select();"
+    />
+    <input type="hidden" name="unit" value="{{ unit }}" />
+    <button class="btn btn-dark">Get Summary</button>
+  </form>
+
+  {% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+  {% endif %}
+
+  {% if summary %}
+    <div class="alert alert-info mb-3">
+      {{ summary }}
+    </div>
+  {% endif %}
+
+  {% if suggestions %}
+    <div class="alert alert-info">
+      {{ suggestions|linebreaks }}
+    </div>
+  {% endif %}
+</div>
+{% endblock content %}
+{% block extra_js %}{% endblock extra_js %}
