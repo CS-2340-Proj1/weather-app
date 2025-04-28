@@ -1,32 +1,33 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-<div class="p-3">
+{% block content %}
+<header class="masthead" style="background-color: #0B234C; color: #F5B63B; padding: 3rem 0; font-family: 'Helvetica', 'Arial', sans-serif;">
+  <div class="container text-center">
+    <h1 class="display-4" style="font-weight: bold;">About Weather App</h1>
+    <p class="lead mt-3">
+      Your one-stop solution for real-time, accurate weather forecasts!
+    </p>
+  </div>
+</header>
+
+<section class="py-5" style="background-color: #0B234C; color: #F5B63B; font-family: 'Helvetica', 'Arial', sans-serif;">
   <div class="container">
-    <div class="row mt-3">
-      <div class="col-md-6 mx-auto mb-3">
-        <h2>About</h2>
-        <hr />
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4">
+        <h2 class="mb-4">Why Weather App?</h2>
         <p>
-           At Movies Store, we offer a vast digital library
-           that spans across genres, ensuring there's
-           something for every movie lover. Browse our
-           extensive collection of films, including the
-           latest releases, timeless classics, and hidden
-           gems. With just a few clicks, you can rent or
-           purchase your favorite titles and instantly
-           stream them in high-definition quality.
+          Weather App empowers you to check the latest weather updates for any city using a simple zip code search. 
+          Whether you're planning a trip or just curious about today’s forecast, we've got you covered with accurate, 
+          fast, and easy-to-read weather data.
         </p>
         <p>
-          This project was made by Harrison, Anastasia, Derek, Irene, and Pranav for CS2340 Objects and Design.
+          Built with love by Harrison, Anastasia, Derek, Irene, and Pranav for CS2340: Objects and Design.
         </p>
       </div>
-      <div class="col-md-6 mx-auto mb-3 text-center">
-        <img src="{% static 'img/about.jpg' %}"
-             class="max-width-100"
-             alt="about" />
+      <div class="col-md-6 text-center">
+        <img src="{% static 'img/weather_about.jpeg' %}" alt="Weather" class="img-fluid rounded shadow" style="max-width: 70%; height: auto;" />
       </div>
     </div>
   </div>
-</div>
+</section>
 {% endblock content %}

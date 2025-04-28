@@ -7,17 +7,17 @@
     {# ── Unit selector ──────────────────────────────────────── #}
     <div class="d-flex justify-content-end mb-3">
       <a href="?{% if zip_code %}zip_code={{ zip_code }}&{% endif %}unit=imperial"
-         class="btn btn-link {% if unit == 'imperial' %}fw-bold{% endif %}">
+         class="btn btn-link {% if unit == 'imperial' %}fw-bold{% endif %}" style="text-decoration: none; color: #0B234C;">
         Fahrenheit
       </a>
       <span>|</span>
       <a href="?{% if zip_code %}zip_code={{ zip_code }}&{% endif %}unit=metric"
-         class="btn btn-link {% if unit == 'metric' %}fw-bold{% endif %}">
+         class="btn btn-link {% if unit == 'metric' %}fw-bold{% endif %}" style="text-decoration: none; color: #0B234C;">
         Celsius
       </a>
     </div>
 
-    <h2>Weather</h2>
+    <h2 class="fw-bold">Weather</h2>
     <hr />
 
     {# ── ZIP Search Form ────────────────────────────────────── #}
@@ -27,15 +27,14 @@
           <div class="input-group">
             <div class="input-group-text">Zip Code</div>
             <input
-            id="zip_input"
-            name="zip_code"
-            type="text"
-            class="form-control"
-            placeholder="Enter zip code"
-            value="{{ zip_code|default_if_none:'' }}"
-            onfocus="this.select();"
-          />
-
+              id="zip_input"
+              name="zip_code"
+              type="text"
+              class="form-control"
+              placeholder="Enter zip code"
+              value="{{ zip_code|default_if_none:'' }}"
+              onfocus="this.select();"
+            />
           </div>
         </div>
         <div class="col-auto">
@@ -58,44 +57,37 @@
         data-last-checked="{{ weather_data.dt }}"
         data-timezone-offset="{{ weather_data.timezone }}"
       >
-        <h4>
+        <h4 class="fw-bold">
           Weather for {{ weather_data.name }}, {{ weather_data.sys.country }}
         </h4>
         <p>
-          Local Time:
-          <span id="local-time"></span>
+          Local Time: <span id="local-time"></span>
         </p>
         <p>
-          Temperature:
-          {{ weather_data.main.temp }}°
+          Temperature: {{ weather_data.main.temp }}°
           {% if unit == 'imperial' %}F{% else %}C{% endif %}
         </p>
         <p>
-          Feels Like:
-          {{ weather_data.main.feels_like }}°
+          Feels Like: {{ weather_data.main.feels_like }}°
           {% if unit == 'imperial' %}F{% else %}C{% endif %}
         </p>
         <p>Humidity: {{ weather_data.main.humidity }}%</p>
         <p>
-          High:
-          {{ weather_data.main.temp_max }}°
+          High: {{ weather_data.main.temp_max }}°
           {% if unit == 'imperial' %}F{% else %}C{% endif %}
         </p>
         <p>
-          Low:
-          {{ weather_data.main.temp_min }}°
+          Low: {{ weather_data.main.temp_min }}°
           {% if unit == 'imperial' %}F{% else %}C{% endif %}
         </p>
         <p>Condition: {{ weather_data.weather.0.description }}</p>
         <p>
-          Last checked:
-          <span id="last-checked"></span> minutes ago
+          Last checked: <span id="last-checked"></span> minutes ago
         </p>
       </div>
 
-      {# ── New: Links to Forecast & Summary ────────────────── #}
+      {# ── Links to Forecast & Summary ──────────────────────── #}
       <div class="mt-3">
-        <!-- 7-day forecast is open to everyone -->
         <a
           href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}"
           class="btn btn-primary me-2"
@@ -103,7 +95,6 @@
           7-Day Forecast
         </a>
 
-        <!-- Today’s AI summary only for logged-in users -->
         {% if user.is_authenticated %}
           <a
             href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}"
@@ -117,11 +108,7 @@
 
     {# ── Map Container ─────────────────────────────────────── #}
     {% if lat and lon %}
-      <div
-        id="map"
-        class="mt-4"
-        style="height:400px;"
-      ></div>
+      <div id="map" class="mt-4" style="height:400px;"></div>
     {% endif %}
 
   </div>  {# /container #}
@@ -162,32 +149,25 @@
 {% if lat and lon %}
 <script>
 (function () {
-  // Pull in the template vars as strings…
   const latStr = "{{ lat|floatformat:6 }}";
-    const lonStr = "{{ lon|floatformat:6 }}";
-    const owm    = "{{ owm_key }}";
+  const lonStr = "{{ lon|floatformat:6 }}";
+  const owm    = "{{ owm_key }}";
 
-    // …then convert them to JS numbers
-    const lat = parseFloat(latStr);
-    const lon = parseFloat(lonStr);
+  const lat = parseFloat(latStr);
+  const lon = parseFloat(lonStr);
 
-    // Initialize the map as before
-    const map = L.map('map', { center: [lat, lon], zoom: 8 });
+  const map = L.map('map', { center: [lat, lon], zoom: 8 });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
 
-    // Temperature overlay
-    const tempLayer = L.tileLayer(
-      `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
-      { opacity: 0.8, attribution: 'Weather © OpenWeatherMap' }
-    );
-    tempLayer.addTo(map);
-
-    // …any other layers you need…
-
+  const tempLayer = L.tileLayer(
+    `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
+    { opacity: 0.8, attribution: 'Weather © OpenWeatherMap' }
+  );
+  tempLayer.addTo(map);
 })();
 </script>
 {% endif %}
