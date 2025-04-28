@@ -158,12 +158,11 @@ def summary(request):
 
             # 2) AI clothing & safety suggestions
             suggestion_prompt = (
-                f"The current weather is {desc}, {temp}{unit_label}, "
-                f"humidity {hum}%, and wind at {wind} {speed_unit}. "
-                "Provide two short bullet points: "
-                "one recommendation on what to wear, "
-                "and one warning about what to watch out for. "
-                "Do NOT restate the weather."
+                f"The current weather in ZIP code {zip_code} is {desc}, with a temperature of {temp}{unit_label}, "
+                f"humidity at {hum}%, and wind speed of {wind} {speed_unit}. "
+                "Please provide two helpful bullet points:\n"
+                "• One recommendation on what the user should wear.\n"
+                "• One warning or suggestion on what the user should be aware of."
             )
             try:
                 chat2 = openai.chat.completions.create(
