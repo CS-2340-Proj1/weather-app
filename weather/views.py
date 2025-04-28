@@ -280,6 +280,18 @@ def summary(request):
                         "• Dress comfortably for mild weather.\n"
                         "• Enjoy your day!"
                     )
+                lat = weather_data['coord']['lat']
+                lon = weather_data['coord']['lon']
+
+                noaa_alerts = fetch_noaa_alerts(lat, lon)
+                alerts_data += noaa_alerts
+
+                if request.user.is_authenticated:
+                    saved_alerts = Alert.objects.filter(
+                        Q(public=True) | Q(user=request.user),
+                        zip_code=zip_code
+                    )
+                    alerts_data += list(saved_alerts)
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
 
