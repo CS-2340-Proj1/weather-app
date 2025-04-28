@@ -7,6 +7,10 @@ class Alert(models.Model):
     zip_code = models.CharField(max_length=10)
     alert_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    public = models.BooleanField(default=False)
+    dismissed_by = models.ManyToManyField(User, related_name="dismissed_alerts", blank=True)
 
     def __str__(self):
         return f"Alert for {self.city_name} ({self.zip_code})"
+    def is_dismissed_for(self, user):
+        return self.dismissed_by.filter(id=user.id).exists()

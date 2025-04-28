@@ -11,10 +11,18 @@
                 <strong>{{ alert.city_name }}</strong> ({{ alert.zip_code }})<br>
                 {{ alert.alert_text }}
             </div>
+
+            {% if alert.public %}
+            <form method="POST" action="{% url 'weather.dismiss_alert' alert.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-warning">Dismiss</button>
+            </form>
+            {% else %}
             <form method="POST" action="{% url 'weather.delete_alert' alert.id %}">
                 {% csrf_token %}
                 <button class="btn btn-sm btn-danger">Delete</button>
             </form>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>

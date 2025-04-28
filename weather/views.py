@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect
 from .models import Alert
+from django.db.models import Q
 from django.urls import reverse
 import openai
 from django.shortcuts import get_object_or_404, redirect
@@ -42,10 +43,10 @@ def index(request):
 
             # Saved alerts
             if request.user.is_authenticated:
-                saved_alerts = Alert.objects.filter(user=request.user, zip_code=zip_code)
+                saved_alerts = Alert.objects.filter(Q(public=True) | Q(user=request.user),zip_code=zip_code)
                 alerts_data += list(saved_alerts)
-        else:
-            error_message = "Invalid ZIP code—could not retrieve weather."
+            else:
+                error_message = "Invalid ZIP code—could not retrieve weather."
 
     return render(request, 'weather/index.html', {
         'weather_data':  weather_data,
@@ -116,23 +117,56 @@ def add_alert(request):
             user=request.user,
             city_name=city_name,
             zip_code=zip_code,
-            alert_text=alert_text
+            alert_text=alert_text,
+            public=request.user.is_staff
         )
     return redirect(f"{reverse('weather.summary')}?zip_code={zip_code}&unit=imperial")
 
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+@login_required
+def delete_alert(request, alert_id):
+    try:
+        alert = Alert.objects.get(id=alert_id)
+    except Alert.DoesNotExist:
+        return redirect('weather.alerts')
+
+    if alert.public:
+        if request.user.is_staff:
+            alert.delete()
+    else:
+        if alert.user == request.user:
+            alert.delete()
+
+    return redirect('weather.alerts')
+
 @login_required
 def alerts_view(request):
-    alerts = Alert.objects.filter(user=request.user)  # or .all() if you want to show all alerts
+    all_alerts = Alert.objects.all()
+
+    alerts = [
+        alert for alert in all_alerts
+        if (not alert.public and alert.user == request.user) or
+           (alert.public and not alert.is_dismissed_for(request.user))
+    ]
+
     return render(request, 'weather/alerts.html', {
         'alerts': alerts
     })
 
+@require_POST
 @login_required
-def delete_alert(request, alert_id):
-    alert = get_object_or_404(Alert, id=alert_id, user=request.user)
-    alert.delete()
-    return redirect('weather.alerts_view')
+def dismiss_alert(request, alert_id):
+    alert = get_object_or_404(Alert, id=alert_id)
 
+    if alert.public:
+        alert.dismissed_by.add(request.user)
+    elif alert.user == request.user:
+        alert.delete()
+
+    return redirect('weather.alerts')
 
 @login_required
 def summary(request):

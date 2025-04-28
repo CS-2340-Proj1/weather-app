@@ -97,21 +97,17 @@
       <ul class="list-group list-group-flush">
         {% for alert in alerts_data %}
         <li class="list-group-item">
-          {% if alert.alert_text %}
-          <!-- User-created alert -->
-          <i class="fa fa-bell text-primary me-2"></i>
-          {{ alert.alert_text }}
-          {% elif alert.properties.headline %}
-          <!-- NOAA alert -->
+          {% if alert.properties %}
           <i class="fa fa-triangle-exclamation text-danger me-2"></i>
-          <strong>{{ alert.properties.headline }}</strong>
-          {% else %}
-          <i class="fa fa-circle-info text-muted me-2"></i>
-          <em>Unnamed alert</em>
+          <strong>{{ alert.properties.event }}</strong><br />
+          <span>{{ alert.properties.headline }}</span>
+          {% elif alert.alert_text %}
+          <i class="fa fa-bell text-primary me-2"></i>
+          <strong>Custom Alert:</strong><br />
+          <span>{{ alert.alert_text }}</span>
           {% endif %}
         </li>
         {% endfor %}
-      </ul>
     </div>
     {% endif %}
     {# ── Links to Forecast & Summary ──────────────────────── #}

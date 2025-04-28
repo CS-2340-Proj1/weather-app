@@ -62,8 +62,13 @@
       <ul style="list-style-type: none; padding-left: 0;">
         {% for alert in alerts_data %}
         <li class="mb-4">
+          {% if alert.properties %}
           <strong>{{ alert.properties.event }}</strong>: {{ alert.properties.headline }}<br />
           <small style="white-space: pre-line;">{{ alert.properties.description }}</small>
+          {% elif alert.alert_text %}
+          <strong>Custom Alert:</strong><br />
+          <small style="white-space: pre-line;">{{ alert.alert_text }}</small>
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
