@@ -81,16 +81,18 @@
     </div>
     {% endif %}
     {# ── Alert Submission Form ── #}
-    {% if user.is_authenticated and weather_data %}
-    <form method="POST" action="{% url 'weather.alerts' %}" class="mt-4">
+    {% if weather_data and user.is_authenticated %}
+    <form method="POST" action="{% url 'weather.add_alert' %}" class="mt-4">
       {% csrf_token %}
       <input type="hidden" name="zip_code" value="{{ zip_code }}">
       <input type="hidden" name="city_name" value="{{ weather_data.name }}">
-      <textarea name="alert_text" class="form-control mb-2" placeholder="Add your own alert..." required></textarea>
-      <button class="btn btn-outline-light" style="background-color: #0B234C; color: #F5B63B;">Save Alert</button>
+      <div class="mb-3">
+        <label for="alert_text" class="form-label">New Alert</label>
+        <textarea class="form-control" name="alert_text" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-warning">Save Alert</button>
     </form>
     {% endif %}
-
   </div>
 </section>
 {% endblock content %}

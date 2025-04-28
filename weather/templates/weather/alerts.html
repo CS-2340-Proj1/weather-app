@@ -1,20 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container py-4">
-    <h2>My Alerts</h2>
-    {% for alert in alerts %}
-    <div class="card my-2">
-        <div class="card-body">
-            <h5 class="card-title">{{ alert.city_name }} ({{ alert.zip_code }})</h5>
-            <p class="card-text">{{ alert.alert_text }}</p>
+<div class="container mt-4">
+    <h2>Your Saved Alerts</h2>
+
+    {% if alerts %}
+    <ul class="list-group">
+        {% for alert in alerts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ alert.city_name }}</strong> ({{ alert.zip_code }})<br>
+                {{ alert.alert_text }}
+            </div>
             <form method="POST" action="{% url 'weather.delete_alert' alert.id %}">
                 {% csrf_token %}
-                <button class="btn btn-danger btn-sm">Delete</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
             </form>
-        </div>
-    </div>
-    {% empty %}
-    <p>You have no saved alerts.</p>
-    {% endfor %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No alerts saved yet.</p>
+    {% endif %}
 </div>
 {% endblock %}

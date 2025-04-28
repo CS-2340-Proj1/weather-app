@@ -5,46 +5,45 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect
 from .models import Alert
+from django.urls import reverse
 import openai
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
 def index(request):
-    """
-    Home view: shows current weather for a ZIP code.
-    """
-    zip_code      = request.GET.get('zip_code')
-    unit          = request.GET.get('unit', 'imperial')
-    weather_data  = None
+    zip_code = request.GET.get('zip_code')
+    unit = request.GET.get('unit', 'imperial')
+    weather_data = None
     error_message = None
-    lat           = None
-    lon           = None
-    owm_key       = settings.WEATHER_API_KEY
+    lat = lon = None
+    owm_key = settings.WEATHER_API_KEY
     alerts_data = []
 
     if zip_code:
         api_key = settings.WEATHER_API_KEY
-        url = (
-            f"http://api.openweathermap.org/data/2.5/weather"
-            f"?zip={zip_code},us&appid={api_key}&units={unit}"
-        )
+        url = f"http://api.openweathermap.org/data/2.5/weather?zip={zip_code},us&appid={api_key}&units={unit}"
         resp = requests.get(url)
 
         if resp.status_code == 200:
             weather_data = resp.json()
             lat = weather_data['coord']['lat']
             lon = weather_data['coord']['lon']
-            # Fetch alerts from NOAA using lat/lon
-            alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
-            alerts_data = None
 
+            # NOAA alerts
+            alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
             try:
                 alert_resp = requests.get(alerts_url, headers={'User-Agent': 'weather-app/1.0'})
                 if alert_resp.status_code == 200:
                     alert_json = alert_resp.json()
-                alerts_data = alert_json['features'] if alert_json['features'] else []
-            except Exception as e:
-                alerts_data = []
+                    noaa_alerts = alert_json['features'] if alert_json['features'] else []
+                    alerts_data += noaa_alerts
+            except Exception:
+                pass
+
+            # Saved alerts
+            if request.user.is_authenticated:
+                saved_alerts = Alert.objects.filter(user=request.user, zip_code=zip_code)
+                alerts_data += list(saved_alerts)
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
 
@@ -56,6 +55,7 @@ def index(request):
         'lat':           lat,
         'lon':           lon,
         'owm_key':       owm_key,
+        'alerts_data':   alerts_data,
     })
 
 
@@ -103,6 +103,7 @@ def forecast(request):
         'forecast_data': forecast_data,
         'error_message': error_message,
     })
+
 @require_POST
 @login_required
 def add_alert(request):
@@ -117,12 +118,14 @@ def add_alert(request):
             zip_code=zip_code,
             alert_text=alert_text
         )
-    return redirect('weather.summary')
+    return redirect(f"{reverse('weather.summary')}?zip_code={zip_code}&unit=imperial")
 
 @login_required
 def alerts_view(request):
-    alerts = Alert.objects.filter(user=request.user)
-    return render(request, 'weather/alerts.html', {'alerts': alerts})
+    alerts = Alert.objects.filter(user=request.user)  # or .all() if you want to show all alerts
+    return render(request, 'weather/alerts.html', {
+        'alerts': alerts
+    })
 
 @login_required
 def delete_alert(request, alert_id):

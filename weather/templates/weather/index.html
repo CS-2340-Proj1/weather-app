@@ -7,12 +7,13 @@
     {# ── Unit selector ──────────────────────────────────────── #}
     <div class="d-flex justify-content-end mb-3">
       <a href="?{% if zip_code %}zip_code={{ zip_code }}&{% endif %}unit=imperial"
-         class="btn btn-link {% if unit == 'imperial' %}fw-bold{% endif %}" style="text-decoration: none; color: #0B234C;">
+        class="btn btn-link {% if unit == 'imperial' %}fw-bold{% endif %}"
+        style="text-decoration: none; color: #0B234C;">
         Fahrenheit
       </a>
       <span>|</span>
       <a href="?{% if zip_code %}zip_code={{ zip_code }}&{% endif %}unit=metric"
-         class="btn btn-link {% if unit == 'metric' %}fw-bold{% endif %}" style="text-decoration: none; color: #0B234C;">
+        class="btn btn-link {% if unit == 'metric' %}fw-bold{% endif %}" style="text-decoration: none; color: #0B234C;">
         Celsius
       </a>
     </div>
@@ -26,15 +27,8 @@
         <div class="col-auto">
           <div class="input-group">
             <div class="input-group-text">Zip Code</div>
-            <input
-              id="zip_input"
-              name="zip_code"
-              type="text"
-              class="form-control"
-              placeholder="Enter zip code"
-              value="{{ zip_code|default_if_none:'' }}"
-              onfocus="this.select();"
-            />
+            <input id="zip_input" name="zip_code" type="text" class="form-control" placeholder="Enter zip code"
+              value="{{ zip_code|default_if_none:'' }}" onfocus="this.select();" />
           </div>
         </div>
         <div class="col-auto">
@@ -46,85 +40,100 @@
 
     {# ── Error Message ──────────────────────────────────────── #}
     {% if error_message %}
-      <div class="alert alert-danger">{{ error_message }}</div>
+    <div class="alert alert-danger">{{ error_message }}</div>
     {% endif %}
 
     {# ── Main Weather Card ─────────────────────────────────── #}
     {% if weather_data %}
-      <div
-        id="weather-data"
-        class="card p-3"
-        data-last-checked="{{ weather_data.dt }}"
-        data-timezone-offset="{{ weather_data.timezone }}"
-      >
-        <h4 class="fw-bold">
-          Weather for {{ weather_data.name }}, {{ weather_data.sys.country }}
-        </h4>
-        <p>
-          Local Time: <span id="local-time"></span>
-        </p>
-        <p>
-          Temperature: {{ weather_data.main.temp }}°
-          {% if unit == 'imperial' %}F{% else %}C{% endif %}
-        </p>
-        <p>
-          Feels Like: {{ weather_data.main.feels_like }}°
-          {% if unit == 'imperial' %}F{% else %}C{% endif %}
-        </p>
-        <p>Humidity: {{ weather_data.main.humidity }}%</p>
-        <p>
-          High: {{ weather_data.main.temp_max }}°
-          {% if unit == 'imperial' %}F{% else %}C{% endif %}
-        </p>
-        <p>
-          Low: {{ weather_data.main.temp_min }}°
-          {% if unit == 'imperial' %}F{% else %}C{% endif %}
-        </p>
-        <p>Condition: {{ weather_data.weather.0.description }}</p>
-        <p>
-          Last checked: <span id="last-checked"></span> minutes ago
-        </p>
-      </div>
+    <div id="weather-data" class="card p-3" data-last-checked="{{ weather_data.dt }}"
+      data-timezone-offset="{{ weather_data.timezone }}">
+      <h4 class="fw-bold">
+        Weather for {{ weather_data.name }}, {{ weather_data.sys.country }}
+      </h4>
+      <p>
+        Local Time: <span id="local-time"></span>
+      </p>
+      <p>
+        Temperature: {{ weather_data.main.temp }}°
+        {% if unit == 'imperial' %}F{% else %}C{% endif %}
+      </p>
+      <p>
+        Feels Like: {{ weather_data.main.feels_like }}°
+        {% if unit == 'imperial' %}F{% else %}C{% endif %}
+      </p>
+      <p>Humidity: {{ weather_data.main.humidity }}%</p>
+      <p>
+        High: {{ weather_data.main.temp_max }}°
+        {% if unit == 'imperial' %}F{% else %}C{% endif %}
+      </p>
+      <p>
+        Low: {{ weather_data.main.temp_min }}°
+        {% if unit == 'imperial' %}F{% else %}C{% endif %}
+      </p>
+      <p>Condition: {{ weather_data.weather.0.description }}</p>
+      <p>
+        Last checked: <span id="last-checked"></span> minutes ago
+      </p>
+    </div>
 
-          {% if weather_data and user.is_authenticated %}
-      <form action="{% url 'favorites.add' %}" method="post" class="mt-3">
-        {% csrf_token %}
-        <input type="hidden" name="zip_code"  value="{{ zip_code }}">
-        <input type="hidden" name="city_name" value="{{ weather_data.name }}">
-        <button class="btn btn-outline-primary">
-          <i class="fa fa-bookmark"></i> Save this ZIP
-        </button>
-      </form>
+    {% if weather_data and user.is_authenticated %}
+    <form action="{% url 'favorites.add' %}" method="post" class="mt-3">
+      {% csrf_token %}
+      <input type="hidden" name="zip_code" value="{{ zip_code }}">
+      <input type="hidden" name="city_name" value="{{ weather_data.name }}">
+      <button class="btn btn-outline-primary">
+        <i class="fa fa-bookmark"></i> Save this ZIP
+      </button>
+    </form>
     {% elif weather_data %}
-      <p class="text-muted">Log in to save this location.</p>
+    <p class="text-muted">Log in to save this location.</p>
     {% endif %}
-
-      {# ── Links to Forecast & Summary ──────────────────────── #}
-      <div class="mt-3">
-        <a
-          href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}"
-          class="btn btn-primary me-2"
-        >
-          7-Day Forecast
-        </a>
-
-        {% if user.is_authenticated %}
-          <a
-            href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}"
-            class="btn btn-secondary"
-          >
-            Today’s Summary
-          </a>
-        {% endif %}
+    {# ── Alert Box ────────────────────────────────────────────── #}
+    {% if alerts_data %}
+    <div class="card mt-4">
+      <div class="card-header bg-warning text-dark fw-bold">
+        Alerts for ZIP {{ zip_code }}
       </div>
+      <ul class="list-group list-group-flush">
+        {% for alert in alerts_data %}
+        <li class="list-group-item">
+          {% if alert.alert_text %}
+          <!-- User-created alert -->
+          <i class="fa fa-bell text-primary me-2"></i>
+          {{ alert.alert_text }}
+          {% elif alert.properties.headline %}
+          <!-- NOAA alert -->
+          <i class="fa fa-triangle-exclamation text-danger me-2"></i>
+          <strong>{{ alert.properties.headline }}</strong>
+          {% else %}
+          <i class="fa fa-circle-info text-muted me-2"></i>
+          <em>Unnamed alert</em>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {# ── Links to Forecast & Summary ──────────────────────── #}
+    <div class="mt-3">
+      <a href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}" class="btn btn-primary me-2">
+        7-Day Forecast
+      </a>
+
+      {% if user.is_authenticated %}
+      <a href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}" class="btn btn-secondary">
+        Today’s Summary
+      </a>
+      {% endif %}
+    </div>
     {% endif %}
 
     {# ── Map Container ─────────────────────────────────────── #}
     {% if lat and lon %}
-      <div id="map" class="mt-4" style="height:400px;"></div>
+    <div id="map" class="mt-4" style="height:400px;"></div>
     {% endif %}
 
-  </div>  {# /container #}
+  </div> {# /container #}
 </div>
 {% endblock content %}
 
@@ -132,75 +141,79 @@
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
 <script>
-(function () {
-  const w = document.getElementById('weather-data');
-  if (!w) return;
-  const lastChecked = +w.dataset.lastChecked * 1000;
-  const tzOffset    = +w.dataset.timezoneOffset * 1000;
+  (function ()
+  {
+    const w = document.getElementById('weather-data');
+    if (!w) return;
+    const lastChecked = +w.dataset.lastChecked * 1000;
+    const tzOffset = +w.dataset.timezoneOffset * 1000;
 
-  function pad(n){ return n.toString().padStart(2,'0'); }
+    function pad(n) { return n.toString().padStart(2, '0'); }
 
-  function updateLocal() {
-    const now   = new Date(Date.now() + tzOffset);
-    const stamp =
-      `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}`
-      + ` ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
-    document.getElementById('local-time').textContent = stamp;
-  }
-  function updateAgo() {
-    const ago = Math.floor((Date.now() - lastChecked)/60000);
-    document.getElementById('last-checked').textContent = ago;
-  }
+    function updateLocal()
+    {
+      const now = new Date(Date.now() + tzOffset);
+      const stamp =
+        `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`
+        + ` ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+      document.getElementById('local-time').textContent = stamp;
+    }
+    function updateAgo()
+    {
+      const ago = Math.floor((Date.now() - lastChecked) / 60000);
+      document.getElementById('last-checked').textContent = ago;
+    }
 
-  updateLocal(); updateAgo();
-  setInterval(updateLocal, 1000);
-  setInterval(updateAgo,   60000);
-  setTimeout(()=>location.reload(), 1800000);
-})();
+    updateLocal(); updateAgo();
+    setInterval(updateLocal, 1000);
+    setInterval(updateAgo, 60000);
+    setTimeout(() => location.reload(), 1800000);
+  })();
 </script>
 
 {% if lat and lon %}
-  <!-- leaflet map please please please do NOT touch this thx-->
-  <script>
-  (function () {
-      const lat = {{ lat|floatformat:6 }};
-      const lon = {{ lon|floatformat:6 }};
-      const owm = "{{ owm_key }}";
+<!-- leaflet map please please please do NOT touch this thx-->
+<script>
+  (function ()
+  {
+    const lat = "{{ lat|floatformat:6 }}";
+    const lon = "{{ lon|floatformat:6 }}";
+    const owm = "{{ owm_key }}";
 
-      const map = L.map('map',{center:[lat,lon],zoom:8});
+    const map = L.map('map', { center: [lat, lon], zoom: 8 });
 
-      const demoPts = [
-          [lat, lon, 0.9],                      // current point
-          [lat + 0.5, lon + 0.4, 0.7],
-          [lat - 0.6, lon - 0.3, 0.6],
-          [lat + 0.2, lon - 0.8, 0.4]
-      ];
+    const demoPts = [
+      [lat, lon, 0.9],                      // current point
+      [lat + 0.5, lon + 0.4, 0.7],
+      [lat - 0.6, lon - 0.3, 0.6],
+      [lat + 0.2, lon - 0.8, 0.4]
+    ];
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-          maxZoom:19, attribution:'&copy; OpenStreetMap'
-      }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
 
-      const temp = L.tileLayer(
-          `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
-          {opacity:0.8, attribution:'Weather © OpenWeatherMap'}
-      );
-      const clouds = L.tileLayer(
-          `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${owm}`,
-          {opacity:0.6, attribution:'Weather © OpenWeatherMap'}
-      );
-      const heat = L.heatLayer(demoPts, {
-          radius: 125,
-          maxZoom: 11,
-          gradient: {0.4:'#2c7bb6',0.6:'#abd9e9',0.8:'#fdae61',1:'#d7191c'}
-      });
-      temp.addTo(map);
+    const temp = L.tileLayer(
+      `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
+      { opacity: 0.8, attribution: 'Weather © OpenWeatherMap' }
+    );
+    const clouds = L.tileLayer(
+      `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${owm}`,
+      { opacity: 0.6, attribution: 'Weather © OpenWeatherMap' }
+    );
+    const heat = L.heatLayer(demoPts, {
+      radius: 125,
+      maxZoom: 11,
+      gradient: { 0.4: '#2c7bb6', 0.6: '#abd9e9', 0.8: '#fdae61', 1: '#d7191c' }
+    });
+    temp.addTo(map);
 
-      L.control.layers(null, {
-          'Temperature': temp,
-          'Clouds':       clouds,
-          'Heat-map':     heat
-      }, {collapsed:false}).addTo(map);
+    L.control.layers(null, {
+      'Temperature': temp,
+      'Clouds': clouds,
+      'Heat-map': heat
+    }, { collapsed: false }).addTo(map);
   })();
-  </script>
+</script>
 {% endif %}
 {% endblock extra_js %}
