@@ -90,25 +90,21 @@
     {% endif %}
     {# ── Alert Box ────────────────────────────────────────────── #}
     {% if alerts_data %}
-    <div class="card mt-4">
-      <div class="card-header bg-warning text-dark fw-bold">
-        Alerts for ZIP {{ zip_code }}
-      </div>
-      <ul class="list-group list-group-flush">
-        {% for alert in alerts_data %}
-        <li class="list-group-item">
-          {% if alert.properties %}
-          <i class="fa fa-triangle-exclamation text-danger me-2"></i>
-          <strong>{{ alert.properties.event }}</strong><br />
-          <span>{{ alert.properties.headline }}</span>
-          {% elif alert.alert_text %}
-          <i class="fa fa-bell text-primary me-2"></i>
-          <strong>Custom Alert:</strong><br />
-          <span>{{ alert.alert_text }}</span>
-          {% endif %}
-        </li>
-        {% endfor %}
-    </div>
+    <ul class="list-group mt-3">
+      {% for alert in alerts_data %}
+      <li class="list-group-item">
+        {% if alert.properties %}
+        <strong>{{ alert.properties.event }}</strong>: {{ alert.properties.headline }}<br />
+        <small style="white-space: pre-line;">{{ alert.properties.description }}</small>
+        {% else %}
+        <strong>{{ alert.city_name }}</strong> ({{ alert.zip_code }})<br />
+        {{ alert.alert_text }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="alert alert-success mt-3"> No active alerts.</div>
     {% endif %}
     {# ── Links to Forecast & Summary ──────────────────────── #}
     <div class="mt-3">

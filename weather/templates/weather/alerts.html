@@ -8,15 +8,28 @@
         {% for alert in alerts %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <div>
-                <strong>{{ alert.city_name }}</strong> ({{ alert.zip_code }})<br>
+                <strong>{{ alert.city_name }}</strong> ({{ alert.zip_code }})
+                {% if alert.public %}
+                <span class="badge bg-info text-dark ms-2">Public</span>
+                {% else %}
+                <span class="badge bg-secondary ms-2">Private</span>
+                {% endif %}
+                <br>
                 {{ alert.alert_text }}
             </div>
 
             {% if alert.public %}
+            {% if user.is_staff %}
+            <form method="POST" action="{% url 'weather.delete_alert' alert.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+            {% else %}
             <form method="POST" action="{% url 'weather.dismiss_alert' alert.id %}">
                 {% csrf_token %}
                 <button class="btn btn-sm btn-warning">Dismiss</button>
             </form>
+            {% endif %}
             {% else %}
             <form method="POST" action="{% url 'weather.delete_alert' alert.id %}">
                 {% csrf_token %}

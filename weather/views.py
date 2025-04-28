@@ -11,6 +11,17 @@ import openai
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
+def fetch_noaa_alerts(lat, lon):
+    alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
+    headers = {'User-Agent': 'weather-app/1.0'}
+    try:
+        resp = requests.get(alerts_url, headers=headers)
+        if resp.status_code == 200:
+            return resp.json().get('features', [])
+    except Exception as e:
+        print("NOAA alert fetch failed:", e)
+    return []
+
 def index(request):
     zip_code = request.GET.get('zip_code')
     unit = request.GET.get('unit', 'imperial')
@@ -30,23 +41,16 @@ def index(request):
             lat = weather_data['coord']['lat']
             lon = weather_data['coord']['lon']
 
-            # NOAA alerts
-            alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
-            try:
-                alert_resp = requests.get(alerts_url, headers={'User-Agent': 'weather-app/1.0'})
-                if alert_resp.status_code == 200:
-                    alert_json = alert_resp.json()
-                    noaa_alerts = alert_json['features'] if alert_json['features'] else []
-                    alerts_data += noaa_alerts
-            except Exception:
-                pass
+            noaa_alerts = fetch_noaa_alerts(lat, lon)
+            alerts_data += noaa_alerts
 
             # Saved alerts
             if request.user.is_authenticated:
                 saved_alerts = Alert.objects.filter(Q(public=True) | Q(user=request.user),zip_code=zip_code)
                 alerts_data += list(saved_alerts)
-            else:
+            if resp.status_code != 200:
                 error_message = "Invalid ZIP code—could not retrieve weather."
+
 
     return render(request, 'weather/index.html', {
         'weather_data':  weather_data,
