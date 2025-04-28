@@ -1,19 +1,35 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<header class="masthead bg-index text-white text-center
-           py-4">
-  <div class="container d-flex align-items-center flex-
-  column pt-2">
-    <h2>Weather App</h2>
+<header class="masthead text-white text-center py-5" style="background-color: #0B234C;">
+  <div class="container d-flex flex-column align-items-center justify-content-center">
+    <h1 class="display-4" style="font-family: 'Helvetica'; font-weight: bold; color: #F5B63B;">A Fantastic Weather App</h1> 
+    <p class="lead mt-2" style="font-family: 'Helvetica'; color: #F5B63B;">The Only Weather Solution You'll Need!</p>
   </div>
 </header>
-<div class="p-3">
+
+<section class="py-5" style="background-color: #0B234C;">
   <div class="container">
-    <div class="row mt-3">
-      <div class="col mx-auto text-center mb-3">
-        <h4>The only weather solution you'll need!</h4>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form method="POST" action="" class="shadow p-4 rounded bg-white">
+          {% csrf_token %}
+          <h5 class="text-center mb-4" style="font-family: 'Helvetica'; font-weight: bold;">Find the Weather by Zip Code</h5>
+          <div class="input-group">
+            <input 
+              type="text" 
+              name="zipcode" 
+              class="form-control" 
+              placeholder="Enter a Zip Code" 
+              required>
+            <button class="btn" style="background-color: #F5B63B; color: white; font-family: 'Helvetica'; font-weight: bold; text-transform: uppercase;" type="submit">
+              Search
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div>
+</section>
 {% endblock content %}
