@@ -13,8 +13,7 @@ import os
 from pathlib import Path
 
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
-OPENAI_API_KEY  = os.getenv('OPENAI_API_KEY')
-
+AI_API_KEY = os.getenv('AI_API_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -139,12 +138,5 @@ MEDIA_URL = '/media/'
 # Use the SMTP email backend
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_PORT = 587  # Use 465 if you choose SSL
-EMAIL_USE_TLS = True  # Set to False if you're using SSL on port 465
-EMAIL_HOST_USER = 'postmaster@sandbox2a5a4df7502844b0b90b4aa9d04df91b.mailgun.org'     # e.g., postmaster@YOUR_DOMAIN_NAME
-EMAIL_HOST_PASSWORD = 'cs2340'  # Your Mailgun SMTP password
-DEFAULT_FROM_EMAIL = 'postmaster@sandbox2a5a4df7502844b0b90b4aa9d04df91b.mailgun.org'
 
 

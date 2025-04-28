@@ -1,16 +1,18 @@
 import requests
+import logging
 from django.shortcuts import render
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.shortcuts import redirect
 from .models import Alert
 from django.db.models import Q
 from django.urls import reverse
-import openai
+from openai import OpenAI
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key=settings.AI_API_KEY,
+)
 def fetch_noaa_alerts(lat, lon):
     alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
     headers = {'User-Agent': 'weather-app/1.0'}
@@ -193,95 +195,96 @@ def dismiss_alert(request, alert_id):
 
     return redirect('weather.alerts')
 
+    # ────────────────────────── AI Weather Summary ──────────────────────────────
 @login_required
 def summary(request):
-    """
-    Shows a one-sentence AI summary plus clothing/safety suggestions based on a ZIP code.
-    """
-    zip_code      = request.GET.get('zip_code')
-    unit          = request.GET.get('unit', 'imperial')
-    weather_data  = None
-    summary_text  = None
-    suggestions   = None
+    zip_code = request.GET.get("zip_code")
+    unit = request.GET.get("unit", "imperial")
+    weather_data = None
+    summary_text = None
+    suggestions = None
     error_message = None
     alerts_data = []
 
     if zip_code:
-        api_key = settings.WEATHER_API_KEY
-
-        # Fetch current weather
         url = (
-            f"http://api.openweathermap.org/data/2.5/weather"
-            f"?zip={zip_code},us&appid={api_key}&units={unit}"
+            "http://api.openweathermap.org/data/2.5/weather"
+            f"?zip={zip_code},us&appid={settings.WEATHER_API_KEY}&units={unit}"
         )
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=8)
 
         if resp.status_code == 200:
             weather_data = resp.json()
-            desc       = weather_data['weather'][0]['description']
-            temp       = weather_data['main']['temp']
-            hum        = weather_data['main']['humidity']
-            wind       = weather_data['wind']['speed']
-            unit_label = 'F' if unit == 'imperial' else 'C'
-            speed_unit = 'mph' if unit == 'imperial' else 'm/s'
+            desc = weather_data["weather"][0]["description"]
+            temp = weather_data["main"]["temp"]
+            hum = weather_data["main"]["humidity"]
+            wind = weather_data["wind"]["speed"]
+            unit_label = "F" if unit == "imperial" else "C"
+            speed_unit = "mph" if unit == "imperial" else "m/s"
 
-            # 1) AI one-sentence summary
+            # ── 1) One-sentence summary via OpenAI ────────────────────────────
             prompt = (
-                f"Summarize today's weather in one sentence: "
+                "Summarize today's weather in one sentence: "
                 f"{desc}, temp {temp}{unit_label}, "
                 f"humidity {hum}%, wind {wind} {speed_unit}."
             )
-            openai.api_key = settings.OPENAI_API_KEY
             try:
-                chat = openai.chat.completions.create(
+                chat = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {
                             "role": "system",
-                            "content": "You are a concise assistant that summarizes weather in one sentence."
+                            "content": (
+                                "You are a concise assistant that summarizes weather in one sentence."
+                            ),
                         },
                         {"role": "user", "content": prompt},
                     ],
                     max_tokens=60,
-                    temperature=0.5,
+                    temperature=0.8,
                 )
                 summary_text = chat.choices[0].message.content.strip()
-            except Exception:
+            except Exception:  # noqa: BLE001
+                logging.exception("OpenAI summary failed")
                 summary_text = (
                     f"{desc.capitalize()} with temp {temp}{unit_label}, "
                     f"humidity {hum}%, wind {wind} {speed_unit}."
                 )
 
-            # 2) AI clothing & safety suggestions
+            # ── 2) Clothing & safety suggestions via OpenAI ───────────────────
             suggestion_prompt = (
-                f"The current weather in ZIP code {zip_code} is {desc}, with a temperature of {temp}{unit_label}, "
+                f"The current weather in ZIP code {zip_code} is {desc}, "
+                f"with a temperature of {temp}{unit_label}, "
                 f"humidity at {hum}%, and wind speed of {wind} {speed_unit}. "
-                "Please provide two helpful bullet points:\n"
-                "• One recommendation on what the user should wear.\n"
-                "• One warning or suggestion on what the user should be aware of."
+                "Please provide exactly two helpful bullet points:\n"
+                "• Clothing recommendation\n"
+                "• Safety tip"
             )
             try:
-                chat2 = openai.chat.completions.create(
+                chat2 = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {
                             "role": "system",
-                            "content": "You provide concise clothing and safety advice based on weather."
+                            "content": (
+                                "You provide concise clothing and safety advice based on weather."
+                            ),
                         },
                         {"role": "user", "content": suggestion_prompt},
                     ],
                     max_tokens=80,
-                    temperature=0.7,
+                    temperature=0.9,
                 )
                 suggestions = chat2.choices[0].message.content.strip()
-            except Exception:
-                # Fallback
-                if 'rain' in desc:
+            except Exception:  # noqa: BLE001
+                logging.exception("OpenAI suggestion failed")
+                # ── Fallback heuristics (your original logic) ────────────────
+                if "rain" in desc:
                     suggestions = (
                         "• Wear a waterproof jacket or carry an umbrella.\n"
                         "• Watch out for slippery surfaces."
                     )
-                elif 'snow' in desc or 'sleet' in desc:
+                elif "snow" in desc or "sleet" in desc:
                     suggestions = (
                         "• Bundle up in warm layers and insulated boots.\n"
                         "• Watch out for icy sidewalks."
@@ -301,28 +304,31 @@ def summary(request):
                         "• Dress comfortably for mild weather.\n"
                         "• Enjoy your day!"
                     )
-                lat = weather_data['coord']['lat']
-                lon = weather_data['coord']['lon']
 
-                noaa_alerts = fetch_noaa_alerts(lat, lon)
-                alerts_data += noaa_alerts
+                    # ── NOAA & saved alerts ─────────────────────────────────────────
+        lat = weather_data["coord"]["lat"]
+        lon = weather_data["coord"]["lon"]
+        alerts_data.extend(fetch_noaa_alerts(lat, lon))
 
-                if request.user.is_authenticated:
-                    saved_alerts = Alert.objects.filter(
-                    Q(public=True) | Q(user=request.user),
-                    zip_code=zip_code
-                ).exclude(dismissed_by=request.user)
-                    alerts_data += list(saved_alerts)
+        if request.user.is_authenticated:
+            saved = Alert.objects.filter(
+                Q(public=True) | Q(user=request.user),
+                zip_code=zip_code,
+            ).exclude(dismissed_by=request.user)
+            alerts_data.extend(saved)
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
 
-
-    return render(request, 'weather/summary.html', {
-        'weather_data':  weather_data,
-        'summary':       summary_text,
-        'suggestions':   suggestions,
-        'error_message': error_message,
-        'zip_code':      zip_code,
-        'unit':          unit,
-        'alerts_data':   alerts_data,
-    })
+    return render(
+        request,
+        "weather/summary.html",
+        {
+            "weather_data": weather_data,
+            "summary": summary_text,
+            "suggestions": suggestions,
+            "error_message": error_message,
+            "zip_code": zip_code,
+            "unit": unit,
+            "alerts_data": alerts_data,
+        },
+    )
