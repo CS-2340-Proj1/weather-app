@@ -86,6 +86,19 @@
         </p>
       </div>
 
+          {% if weather_data and user.is_authenticated %}
+      <form action="{% url 'favorites.add' %}" method="post" class="mt-3">
+        {% csrf_token %}
+        <input type="hidden" name="zip_code"  value="{{ zip_code }}">
+        <input type="hidden" name="city_name" value="{{ weather_data.name }}">
+        <button class="btn btn-outline-primary">
+          <i class="fa fa-bookmark"></i> Save this ZIP
+        </button>
+      </form>
+    {% elif weather_data %}
+      <p class="text-muted">Log in to save this location.</p>
+    {% endif %}
+
       {# ── Links to Forecast & Summary ──────────────────────── #}
       <div class="mt-3">
         <a
@@ -147,28 +160,47 @@
 </script>
 
 {% if lat and lon %}
-<script>
-(function () {
-  const latStr = "{{ lat|floatformat:6 }}";
-  const lonStr = "{{ lon|floatformat:6 }}";
-  const owm    = "{{ owm_key }}";
+  <!-- leaflet map please please please do NOT touch this thx-->
+  <script>
+  (function () {
+      const lat = {{ lat|floatformat:6 }};
+      const lon = {{ lon|floatformat:6 }};
+      const owm = "{{ owm_key }}";
 
-  const lat = parseFloat(latStr);
-  const lon = parseFloat(lonStr);
+      const map = L.map('map',{center:[lat,lon],zoom:8});
 
-  const map = L.map('map', { center: [lat, lon], zoom: 8 });
+      const demoPts = [
+          [lat, lon, 0.9],                      // current point
+          [lat + 0.5, lon + 0.4, 0.7],
+          [lat - 0.6, lon - 0.3, 0.6],
+          [lat + 0.2, lon - 0.8, 0.4]
+      ];
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          maxZoom:19, attribution:'&copy; OpenStreetMap'
+      }).addTo(map);
 
-  const tempLayer = L.tileLayer(
-    `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
-    { opacity: 0.8, attribution: 'Weather © OpenWeatherMap' }
-  );
-  tempLayer.addTo(map);
-})();
-</script>
+      const temp = L.tileLayer(
+          `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${owm}`,
+          {opacity:0.8, attribution:'Weather © OpenWeatherMap'}
+      );
+      const clouds = L.tileLayer(
+          `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${owm}`,
+          {opacity:0.6, attribution:'Weather © OpenWeatherMap'}
+      );
+      const heat = L.heatLayer(demoPts, {
+          radius: 125,
+          maxZoom: 11,
+          gradient: {0.4:'#2c7bb6',0.6:'#abd9e9',0.8:'#fdae61',1:'#d7191c'}
+      });
+      temp.addTo(map);
+
+      L.control.layers(null, {
+          'Temperature': temp,
+          'Clouds':       clouds,
+          'Heat-map':     heat
+      }, {collapsed:false}).addTo(map);
+  })();
+  </script>
 {% endif %}
 {% endblock extra_js %}
