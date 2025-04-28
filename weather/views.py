@@ -2,7 +2,12 @@ import requests
 from django.shortcuts import render
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect
+from .models import Alert
 import openai
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     """
@@ -15,6 +20,7 @@ def index(request):
     lat           = None
     lon           = None
     owm_key       = settings.WEATHER_API_KEY
+    alerts_data = []
 
     if zip_code:
         api_key = settings.WEATHER_API_KEY
@@ -97,6 +103,33 @@ def forecast(request):
         'forecast_data': forecast_data,
         'error_message': error_message,
     })
+@require_POST
+@login_required
+def add_alert(request):
+    city_name = request.POST.get("city_name")
+    zip_code = request.POST.get("zip_code")
+    alert_text = request.POST.get("alert_text")
+
+    if city_name and zip_code and alert_text:
+        Alert.objects.create(
+            user=request.user,
+            city_name=city_name,
+            zip_code=zip_code,
+            alert_text=alert_text
+        )
+    return redirect('weather.summary')
+
+@login_required
+def alerts_view(request):
+    alerts = Alert.objects.filter(user=request.user)
+    return render(request, 'weather/alerts.html', {'alerts': alerts})
+
+@login_required
+def delete_alert(request, alert_id):
+    alert = get_object_or_404(Alert, id=alert_id, user=request.user)
+    alert.delete()
+    return redirect('weather.alerts_view')
+
 
 @login_required
 def summary(request):
@@ -109,6 +142,7 @@ def summary(request):
     summary_text  = None
     suggestions   = None
     error_message = None
+    alerts_data = []
 
     if zip_code:
         api_key = settings.WEATHER_API_KEY
@@ -208,6 +242,7 @@ def summary(request):
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
 
+
     return render(request, 'weather/summary.html', {
         'weather_data':  weather_data,
         'summary':       summary_text,
@@ -215,4 +250,5 @@ def summary(request):
         'error_message': error_message,
         'zip_code':      zip_code,
         'unit':          unit,
+        'alerts_data':   alerts_data,
     })

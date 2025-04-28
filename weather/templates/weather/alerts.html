@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2>My Alerts</h2>
+    {% for alert in alerts %}
+    <div class="card my-2">
+        <div class="card-body">
+            <h5 class="card-title">{{ alert.city_name }} ({{ alert.zip_code }})</h5>
+            <p class="card-text">{{ alert.alert_text }}</p>
+            <form method="POST" action="{% url 'weather.delete_alert' alert.id %}">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <p>You have no saved alerts.</p>
+    {% endfor %}
+</div>
+{% endblock %}

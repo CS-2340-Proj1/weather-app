@@ -80,6 +80,16 @@
       ✅ No active weather alerts for this ZIP code.
     </div>
     {% endif %}
+    {# ── Alert Submission Form ── #}
+    {% if user.is_authenticated and weather_data %}
+    <form method="POST" action="{% url 'weather.alerts' %}" class="mt-4">
+      {% csrf_token %}
+      <input type="hidden" name="zip_code" value="{{ zip_code }}">
+      <input type="hidden" name="city_name" value="{{ weather_data.name }}">
+      <textarea name="alert_text" class="form-control mb-2" placeholder="Add your own alert..." required></textarea>
+      <button class="btn btn-outline-light" style="background-color: #0B234C; color: #F5B63B;">Save Alert</button>
+    </form>
+    {% endif %}
 
   </div>
 </section>
