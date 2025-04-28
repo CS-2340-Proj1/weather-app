@@ -9,6 +9,9 @@ class Alert(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     public = models.BooleanField(default=False)
     dismissed_by = models.ManyToManyField(User, related_name="dismissed_alerts", blank=True)
+    is_government = models.BooleanField(default=False)
+    noaa_id = models.CharField(max_length=200, blank=True, null=True, unique=True)
+
 
     def __str__(self):
         return f"Alert for {self.city_name} ({self.zip_code})"

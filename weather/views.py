@@ -46,7 +46,10 @@ def index(request):
 
             # Saved alerts
             if request.user.is_authenticated:
-                saved_alerts = Alert.objects.filter(Q(public=True) | Q(user=request.user),zip_code=zip_code)
+                saved_alerts = Alert.objects.filter(
+                    Q(public=True) | Q(user=request.user),
+                    zip_code=zip_code
+                ).exclude(dismissed_by=request.user)
                 alerts_data += list(saved_alerts)
             if resp.status_code != 200:
                 error_message = "Invalid ZIP code—could not retrieve weather."
@@ -145,6 +148,24 @@ def delete_alert(request, alert_id):
             alert.delete()
 
     return redirect('weather.alerts')
+
+@require_POST
+@login_required
+def save_alert(request):
+    alert_text = request.POST.get("alert_text")
+    zip_code = request.POST.get("zip_code")
+    city_name = request.POST.get("city_name")
+
+    if alert_text and zip_code and city_name:
+        Alert.objects.create(
+            user=request.user,
+            city_name=city_name,
+            zip_code=zip_code,
+            alert_text=alert_text,
+            public=request.user.is_staff
+        )
+
+    return redirect(request.META.get('HTTP_REFERER', reverse('weather.index')))
 
 @login_required
 def alerts_view(request):
@@ -288,9 +309,9 @@ def summary(request):
 
                 if request.user.is_authenticated:
                     saved_alerts = Alert.objects.filter(
-                        Q(public=True) | Q(user=request.user),
-                        zip_code=zip_code
-                    )
+                    Q(public=True) | Q(user=request.user),
+                    zip_code=zip_code
+                ).exclude(dismissed_by=request.user)
                     alerts_data += list(saved_alerts)
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
