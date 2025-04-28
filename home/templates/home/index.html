@@ -4,7 +4,8 @@
 {% block content %}
 <header class="masthead text-white text-center py-5" style="background-color: #0B234C;">
   <div class="container d-flex flex-column align-items-center justify-content-center">
-    <h1 class="display-4" style="font-family: 'Helvetica'; font-weight: bold; color: #F5B63B;">A Fantastic Weather App</h1> 
+    <h1 class="display-4" style="font-family: 'Helvetica'; font-weight: bold; color: #F5B63B;">A Fantastic Weather App
+    </h1>
     <p class="lead mt-2" style="font-family: 'Helvetica'; color: #F5B63B;">The Only Weather Solution You'll Need!</p>
   </div>
 </header>
@@ -13,17 +14,15 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <form method="POST" action="" class="shadow p-4 rounded bg-white">
-          {% csrf_token %}
-          <h5 class="text-center mb-4" style="font-family: 'Helvetica'; font-weight: bold;">Find the Weather by Zip Code</h5>
+        <form method="GET" action="{% url 'weather.index' %}" class="shadow p-4 rounded bg-white">
+          <h5 class="text-center mb-4" style="font-family: 'Helvetica'; font-weight: bold;">
+            Find the Weather by Zip Code
+          </h5>
           <div class="input-group">
-            <input 
-              type="text" 
-              name="zipcode" 
-              class="form-control" 
-              placeholder="Enter a Zip Code" 
-              required>
-            <button class="btn" style="background-color: #F5B63B; color: white; font-family: 'Helvetica'; font-weight: bold; text-transform: uppercase;" type="submit">
+            <input type="text" name="zip_code" class="form-control" placeholder="Enter a Zip Code" required>
+            <button class="btn"
+              style="background-color: #F5B63B; color: white; font-family: 'Helvetica'; font-weight: bold; text-transform: uppercase;"
+              type="submit">
               Search
             </button>
           </div>

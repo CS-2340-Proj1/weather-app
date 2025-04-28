@@ -28,6 +28,17 @@ def index(request):
             weather_data = resp.json()
             lat = weather_data['coord']['lat']
             lon = weather_data['coord']['lon']
+            # Fetch alerts from NOAA using lat/lon
+            alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lon}"
+            alerts_data = None
+
+            try:
+                alert_resp = requests.get(alerts_url, headers={'User-Agent': 'weather-app/1.0'})
+                if alert_resp.status_code == 200:
+                    alert_json = alert_resp.json()
+                alerts_data = alert_json['features'] if alert_json['features'] else []
+            except Exception as e:
+                alerts_data = []
         else:
             error_message = "Invalid ZIP code—could not retrieve weather."
 

@@ -6,57 +6,63 @@
     <h2 class="text-center mb-5" style="font-weight: bold; font-size: 2.8rem;">Today's AI Weather Summary</h2>
 
     <div class="text-center mb-5">
-      <a
-        href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}"
-        class="btn btn-outline-light me-3"
-        style="font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;"
-      >
+      <a href="{% url 'weather.forecast' %}?zip_code={{ zip_code }}&unit={{ unit }}" class="btn btn-outline-light me-3"
+        style="font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;">
         7-Day Forecast
       </a>
-      <a
-        href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}"
-        class="btn"
-        style="background-color: #F5B63B; color: #0B234C; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;"
-      >
+      <a href="{% url 'weather.summary' %}?zip_code={{ zip_code }}&unit={{ unit }}" class="btn"
+        style="background-color: #F5B63B; color: #0B234C; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;">
         Today's AI Summary
       </a>
     </div>
 
     <form method="get" class="d-flex justify-content-center mb-5">
-      <input
-        id="zip_input"
-        name="zip_code"
-        type="text"
-        class="form-control me-3"
-        style="max-width: 300px; font-family: 'Helvetica', 'Arial', sans-serif;"
-        placeholder="Enter zip code"
-        value="{{ zip_code|default_if_none:'' }}"
-        onfocus="this.select();"
-      />
+      <input id="zip_input" name="zip_code" type="text" class="form-control me-3"
+        style="max-width: 300px; font-family: 'Helvetica', 'Arial', sans-serif;" placeholder="Enter zip code"
+        value="{{ zip_code|default_if_none:'' }}" onfocus="this.select();" />
       <input type="hidden" name="unit" value="{{ unit }}" />
       <button class="btn"
-        style="background-color: #F5B63B; color: #0B234C; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;"
-      >
+        style="background-color: #F5B63B; color: #0B234C; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold; text-transform: uppercase;">
         Get Summary
       </button>
     </form>
 
     {% if error_message %}
-      <div class="alert alert-danger text-center fs-5" style="font-family: 'Helvetica', 'Arial', sans-serif;">
-        {{ error_message }}
-      </div>
+    <div class="alert alert-danger text-center fs-5" style="font-family: 'Helvetica', 'Arial', sans-serif;">
+      {{ error_message }}
+    </div>
     {% endif %}
 
     {% if summary %}
-      <div class="p-4 mb-4" style="background-color: #F5B63B; color: #0B234C; border-radius: 10px; font-size: 1.5rem; text-align: center; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold;">
-        {{ summary }}
-      </div>
+    <div class="p-4 mb-4"
+      style="background-color: #F5B63B; color: #0B234C; border-radius: 10px; font-size: 1.5rem; text-align: center; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold;">
+      {{ summary }}
+    </div>
     {% endif %}
 
     {% if suggestions %}
-      <div class="p-4" style="background-color: #F5B63B; color: #0B234C; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold;">
-        {{ suggestions|linebreaksbr }}
-      </div>
+    <div class="p-4"
+      style="background-color: #F5B63B; color: #0B234C; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: 'Helvetica', 'Arial', sans-serif; font-weight: bold;">
+      {{ suggestions|linebreaksbr }}
+    </div>
+    {% endif %}
+
+    {% if alerts_data %}
+    <div class="mt-5 p-4" style="background-color: #dc3545; color: white; border-radius: 10px;">
+      <h4 class="mb-3 text-center" style="font-weight: bold;">⚠️ Active Weather Alerts</h4>
+      <ul style="list-style-type: none; padding-left: 0;">
+        {% for alert in alerts_data %}
+        <li class="mb-4">
+          <strong>{{ alert.properties.event }}</strong>: {{ alert.properties.headline }}<br>
+          <small style="white-space: pre-line;">{{ alert.properties.description }}</small>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div class="mt-5 text-center text-success" style="font-size: 1.2rem;">
+      ✅ No active weather alerts for this ZIP code.
+    </div>
     {% endif %}
 
   </div>
